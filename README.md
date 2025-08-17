@@ -44,7 +44,7 @@ Note -
 
 The controller is to be implemented in the following Verilog file: *topModule.v*
 
-Strictly adhere to the boilerplate code for topModule provided [here](https://drive.google.com/file/d/113U90ZFKcZvJ_euyyFYGzhbW_c_KtBh4/view?usp=sharing).
+Strictly adhere to the boilerplate code for topModule provided [here](topModule.v).
 
 *topModule* must contain instances of the following modules:
 
