@@ -75,6 +75,7 @@ This task requires in-depth research as a broad range of concepts must be utiliz
     - [Wikipedia_Page_On_UART](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter)
 - Verilog:
     - [ChipVerify - Verilog](https://www.chipverify.com/tutorials/verilog)
+    - [HDLBits - Practice Verilog](https://hdlbits.01xz.net/wiki/Problem_sets)
 
 ### **Software and Packages Required:**
 
