@@ -2,11 +2,9 @@ module rx_header (
     input clk,
     input serial,
     output reg general_dv,
-    output reg [15:0] s_header,
     output reg [7:0] s_CT,
     output reg [15:0] s_FSA,
-    output reg [15:0] s_LSA,
-    output reg [15:0] s_sample
+    output reg [15:0] s_LSA
 );
 
     localparam idle = 4'b0000;
@@ -22,6 +20,8 @@ module rx_header (
     wire wi_dv;
     reg [3:0] state = 4'b0000; 
     reg [7:0] t_general = 8'h00;
+    reg [15:0] s_header;
+    reg [15:0] s_sample;
     
     reg [15:0] sample_mem [255:0];
     reg [7:0] sample_index = 0;
