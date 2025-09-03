@@ -8,15 +8,22 @@ module reciever_header_tb;
 
     reg tb_Clock;
     reg tb_Rx_Serial;
-    wire [15:0] tb_Rx_Byte_1;
     wire [7:0] tb_Rx_Byte_2;
     wire [15:0] tb_Rx_Byte_3;
     wire [15:0] tb_Rx_Byte_4;
-    wire [15:0] tb_Rx_Byte_5;
+    wire [15:0] obs_alert;
+    wire [15:0] mad;
+    wire [15:0] mia;
+    wire data_validation;
+    wire tick;
+    wire Tx;
     wire dv;
 
     // Instantiate UART RX
-    rx_header dut (tb_Clock, tb_Rx_Serial, dv, tb_Rx_Byte_1, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, tb_Rx_Byte_5);
+    rx_header dut (tb_Clock, tb_Rx_Serial, dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4);
+    distanceProcess dis(tb_Clock, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, data_validation, obs_alert, mad, mid);
+    baud_generator baud(tb_Clock, tick);
+    TxD tx(tb_Clock, data_validation, tick, mda, mia, obs_alert, Tx);
 
     // Clock generation: 10 MHz
     initial tb_Clock = 0;
@@ -57,13 +64,25 @@ module reciever_header_tb;
         uart_send_byte(8'b10101010); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
-        uart_send_byte(8'b00110011); // Test for pattern 0x55
+        uart_send_byte(8'b00000001); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
         uart_send_byte(8'b01101001); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
         uart_send_byte(8'b11111111); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+        
+        uart_send_byte(8'b00110010); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+
+        uart_send_byte(8'b10110001); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+        
+        uart_send_byte(8'b00001111); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+
+        uart_send_byte(8'b00110001); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
         // Finish simulation

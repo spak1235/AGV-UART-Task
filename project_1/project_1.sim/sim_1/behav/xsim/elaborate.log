@@ -5,5 +5,17 @@ Running: C:/Xilinx/Vivado/2024.2/bin/unwrapped/win64.o/xelab.exe --incr --debug 
 Using 2 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 16 for port 'min_dist_angle' [C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/reciever_header_tb.v:24]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 16 for port 'max_distance_angle' [C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/reciever_header_tb.v:26]
 Completed static elaboration
-INFO: [XSIM 43-4323] No Change in HDL. Linking previously generated obj files to create kernel
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.uart_rx
+Compiling module xil_defaultlib.rx_header
+Compiling module xil_defaultlib.distanceProcess
+Compiling module xil_defaultlib.baud_generator_default
+Compiling module xil_defaultlib.TxD
+Compiling module xil_defaultlib.reciever_header_tb
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot reciever_header_tb_behav
