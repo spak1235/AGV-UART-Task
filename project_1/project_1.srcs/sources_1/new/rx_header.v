@@ -20,24 +20,20 @@ module rx_header (
     wire wi_dv;
     reg [3:0] state = 4'b0000; 
     reg [7:0] t_general = 8'h00;
-    reg [15:0] s_header;
-    reg [15:0] s_sample;
-    
     reg [15:0] sample_mem [255:0];
     reg [7:0] sample_index = 0;
     reg [7:0] sample_expected;
-    reg [15:0] obs_alert = 0;
-    reg [7:0] max_dist_index = 0;
-    reg [7:0] min_dist_index = 0;
-    reg [15:0] max_dist = 16'b0000000000000000;
-    reg [15:0] min_dist = 16'b1111111111111111;
-    reg [15:0] max_dist_angle;
-    reg [15:0] min_dist_angle;
+    reg [15:0] s_header;
+    reg [15:0] s_sample;
 
     integer file;
     integer i;
+
     initial begin 
         file = $fopen("sample_mem.mem", "w");
+        for (i=0; i<256; i=i+1) begin
+            sample_mem[i] <= 16'h0000;
+        end
     end
 
     uart_rx general( clk, serial, wi_dv, wi_general);
@@ -122,30 +118,11 @@ module rx_header (
                     s_sample[15:8] <= wi_general;
                     
                     sample_mem[sample_index] <= s_sample;
-                    if (sample_index < 16) begin
-                        if (sample_mem[sample_index] < 102.4) begin
-                            obs_alert <= obs_alert | (1<<sample_index);
-                        end
-                    end
-
-                    if(sample_mem[sample_index] > max_dist) begin
-                        max_dist <= sample_mem[sample_index];
-                        max_dist_index <= sample_index;
-                    end
-
-                    if(sample_mem[sample_index] < min_dist) begin
-                        min_dist <= sample_mem[sample_index];
-                        min_dist_index <= sample_index;
-                    end
 
                     sample_index <= sample_index+1;
+                    $fdisplay(file, "%16b", sample_mem[sample_index]);
                     
                     if (sample_index == sample_expected) begin
-                        max_dist_angle = s_FSA + max_dist_index*((s_LSA-s_FSA)/(s_CT-1));
-                        min_dist_angle = s_FSA + min_dist_index*((s_LSA-s_FSA)/(s_CT-1));
-                        for (i = 0; i < s_CT; i=i+1) begin
-                            $fdisplay(file, "%16b", sample_mem[i]);
-                        end
                         state <= idle;
                     end
                     else begin

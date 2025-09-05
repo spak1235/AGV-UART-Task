@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="reciever_header_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="reciever_header_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="1,070.626827 us"></ZoomStartTime>
+      <ZoomEndTime time="1,197.626828 us"></ZoomEndTime>
+      <Cursor1Time time="1,558.250000 us"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="276"></NameColumnWidth>
+      <ValueColumnWidth column_width="120"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="16" />
+   <wvobject fp_name="/reciever_header_tb/tb_Clock" type="logic">
+      <obj_property name="ElementShortName">tb_Clock</obj_property>
+      <obj_property name="ObjectShortName">tb_Clock</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/tb_Rx_Serial" type="logic">
+      <obj_property name="ElementShortName">tb_Rx_Serial</obj_property>
+      <obj_property name="ObjectShortName">tb_Rx_Serial</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/tb_Rx_Byte_2" type="array">
+      <obj_property name="ElementShortName">tb_Rx_Byte_2[7:0]</obj_property>
+      <obj_property name="ObjectShortName">tb_Rx_Byte_2[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/tb_Rx_Byte_3" type="array">
+      <obj_property name="ElementShortName">tb_Rx_Byte_3[15:0]</obj_property>
+      <obj_property name="ObjectShortName">tb_Rx_Byte_3[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/tb_Rx_Byte_4" type="array">
+      <obj_property name="ElementShortName">tb_Rx_Byte_4[15:0]</obj_property>
+      <obj_property name="ObjectShortName">tb_Rx_Byte_4[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/obs_alert" type="array">
+      <obj_property name="ElementShortName">obs_alert[15:0]</obj_property>
+      <obj_property name="ObjectShortName">obs_alert[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/mad" type="array">
+      <obj_property name="ElementShortName">mad[15:0]</obj_property>
+      <obj_property name="ObjectShortName">mad[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/mia" type="array">
+      <obj_property name="ElementShortName">mia[15:0]</obj_property>
+      <obj_property name="ObjectShortName">mia[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/data_validation" type="logic">
+      <obj_property name="ElementShortName">data_validation</obj_property>
+      <obj_property name="ObjectShortName">data_validation</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/tick" type="logic">
+      <obj_property name="ElementShortName">tick</obj_property>
+      <obj_property name="ObjectShortName">tick</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/Tx" type="logic">
+      <obj_property name="ElementShortName">Tx</obj_property>
+      <obj_property name="ObjectShortName">Tx</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/dv" type="logic">
+      <obj_property name="ElementShortName">dv</obj_property>
+      <obj_property name="ObjectShortName">dv</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/CLK_FREQ_HZ" type="array">
+      <obj_property name="ElementShortName">CLK_FREQ_HZ[31:0]</obj_property>
+      <obj_property name="ObjectShortName">CLK_FREQ_HZ[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/BAUD_RATE" type="array">
+      <obj_property name="ElementShortName">BAUD_RATE[31:0]</obj_property>
+      <obj_property name="ObjectShortName">BAUD_RATE[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/CLKS_PER_BIT" type="array">
+      <obj_property name="ElementShortName">CLKS_PER_BIT[31:0]</obj_property>
+      <obj_property name="ObjectShortName">CLKS_PER_BIT[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/reciever_header_tb/BIT_PERIOD" type="array">
+      <obj_property name="ElementShortName">BIT_PERIOD[31:0]</obj_property>
+      <obj_property name="ObjectShortName">BIT_PERIOD[31:0]</obj_property>
+   </wvobject>
+</wave_config>

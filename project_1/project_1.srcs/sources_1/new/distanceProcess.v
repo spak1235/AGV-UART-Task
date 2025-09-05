@@ -10,53 +10,85 @@ module distanceProcess (
 );
 
     reg [15:0] sample_mem [255:0];
-    reg [15:0] temp_obs = 16'b0000000000000000;
-    reg [7:0] max_dist_index = 0;
-    reg [7:0] min_dist_index = 0;
-    reg [15:0] max_dist = 16'b0000000000000000;
-    reg [15:0] min_dist = 16'b1111111111111111;
+    reg [15:0] temp_obs;
+    reg [7:0] max_dist_index;
+    reg [7:0] min_dist_index;
+    reg [15:0] max_dist;
+    reg [15:0] min_dist;
+    
+    localparam ct_idle = 1'b0;
+    localparam ct_start = 1'b1;
+    reg ct_state;
+    reg [7:0] ct_counter;
+    reg [3:0] k;
+
     integer i;
-    integer j;
-    integer k;
 
     initial begin
-        $readmemh("memory_data.mem", sample_mem);
+        $readmemh("sample_mem.mem", sample_mem);
+        obs_alert <= 0;
+        max_dist_angle <= 0;
+        min_dist_angle <= 0;
     end
 
     always @(posedge clk) begin
-        for (j=0; j<8; j=j+1) begin
-            if (ct[j] == 1'b1) begin
-                k <= j;
+        case (ct_state)
+            ct_idle: begin
+                ct_counter <= 0;
+                data_validation <= 1'b0;
+                temp_obs <= 16'h0000;
+                max_dist <= 0;
+                min_dist <= 16'hFFFF;
+                max_dist_index <= 0;
+                min_dist_index <= 0;
+                k <= 0;
+                ct_state <= ct_start;
             end
-        end
 
-        for (i=0; i<ct; i=i+1) begin
-            if (i < 16) begin
-                if (sample_mem[i] < 102.4) begin
-                    temp_obs <= temp_obs | (1<<i); 
+            ct_start: begin
+                if (ct_counter < ct) begin
+                    if (ct_counter < 8 && ct[ct_counter]) begin
+                        k <= ct_counter[3:0];
+                    end
+
+                    if (ct_counter < 16) begin
+                        if (sample_mem[ct_counter] < 102.4) begin
+                            temp_obs <= temp_obs | (1 << ct_counter);
+                            obs_alert <= temp_obs;
+                        end
+                    end
+
+                    if (sample_mem[ct_counter] > max_dist) begin
+                        max_dist <= sample_mem[ct_counter];
+                        max_dist_index <= ct_counter[7:0];
+                    end
+
+                    if (sample_mem[ct_counter] < min_dist) begin
+                        min_dist       <= sample_mem[ct_counter];
+                        min_dist_index <= ct_counter[7:0];
+                    end
                 end
-            end
 
-            if(sample_mem[i] > max_dist) begin
-                max_dist <= sample_mem[i];
-                max_dist_index <= i;
-            end
+                if (ct_counter == ct-1) begin
+                    data_validation <= 1'b1;
+                    ct_state <= ct_idle;
+                end
 
-            if(sample_mem[i] < min_dist) begin
-                min_dist <= sample_mem[i];
-                min_dist_index <= i;
+                ct_counter <= ct_counter + 1;
             end
-
-            min_dist_angle = FSA + min_dist_index*((LSA-FSA)<<k);
-            max_dist_angle = FSA + max_dist_index*((LSA-FSA)<<k);
-        end
-        
-        if (max_dist_angle == 16'bxxxxxxxxxxxxxxxx || min_dist_angle == 16'bxxxxxxxxxxxxxxxx || temp_obs == 16'bxxxxxxxxxxxxxxxx) begin
-            data_validation <= 1'b0;
-        end
-        else begin
-            data_validation <= 1'b1;
-        end
-        obs_alert <= temp_obs;
+            
+            default begin
+                ct_state <= ct_idle;
+            end
+        endcase
     end
+
+    always @(posedge clk) begin
+        if (data_validation) begin
+            obs_alert <= temp_obs;
+            max_dist_angle <= FSA + max_dist_index * ((LSA - FSA) << k);
+            min_dist_angle <= FSA + min_dist_index * ((LSA - FSA) << k);
+        end
+    end
+
 endmodule
