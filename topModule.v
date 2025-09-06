@@ -280,74 +280,85 @@ endmodule
 module RxD (
     input  clk,
     input  reset,
-    input  rx_pin,
+    input  serial_input,
     output reg [7:0] parallel_data,
-    output reg byte_packed
+    output reg byte_packed,
+    output reg state,
+    output reg [3:0] bit_counter
 );
+    //once done processing 1 surge of reset_internal
+    reg [8:0] baud_counter;
+    reg startBaud;
+    reg reset_internal;
+    reg baud_clk;
+    reg delayOneMomentPliz;
 
-    reg [2:0] rx_state; 
-    reg [2:0] bit_counter;
-    reg [6:0] baud_counter;
+    always@(posedge clk) begin
+    if(startBaud) begin
+    if(baud_counter<434) begin
+        baud_counter<= baud_counter+1;
+    end
 
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            rx_state      <= 0;   // move to idle state
-            bit_counter   <= 0;
-            baud_counter  <= 0;
-            parallel_data <= 0;
-            byte_packed   <= 0;
-        end else begin
+    if(baud_counter==434) begin
+        baud_clk <= ~baud_clk;
+        baud_counter <= 0;
+    end
+    end
+    end
+    always @(posedge(clk) or posedge(reset) or posedge(reset_internal)) begin
+        if(reset | reset_internal) begin
+            startBaud <= 0;
+            baud_counter <= 0;
+            state <= 0;
+            reset_internal <= 0;
+            baud_clk <= 0;
+            parallel_data <= 8'd0;
+            bit_counter <= 0;
             byte_packed <= 0;
-
-            case(rx_state)
-                // waiting for falling edge
-                3'd0: begin
-                    if (rx_pin == 0) begin
-                        rx_state     <= 1;   // move to start state
-                        baud_counter <= 0;
-                    end
-                end
-
-                // start bit search
-                3'd1: begin
-                    baud_counter <= baud_counter + 1;
-                    if (baud_counter == 43) begin
-                        rx_state     <= 2;  // move to data read state
-                        baud_counter <= 0;
-                        bit_counter  <= 0;
-                    end
-                end
-
-                // sample 8 bits
-                3'd2: begin
-                    baud_counter <= baud_counter + 1;
-
-                    if (baud_counter == 43) begin
-                        parallel_data[bit_counter] <= rx_pin;
-                    end
-
-                    if (baud_counter == 86) begin
-                        baud_counter <= 0;
-                        if (bit_counter == 7) begin
-                            rx_state <= 3; // after last bit, move to stop state
-                        end else begin
-                            bit_counter <= bit_counter + 1;
-                        end
-                    end
-                end
-
-                // wait one bit time and then flag ready
-                3'd3: begin
-                    baud_counter <= baud_counter + 1;
-                    if (baud_counter == 86) begin
-                        rx_state     <= 0;   // back to IDLE
-                        baud_counter <= 0;
-                        byte_packed  <= 1;   // signal valid byte
-                    end
-                end
-            endcase
+            delayOneMomentPliz <= 0;
         end
     end
+    always @(posedge clk) begin
+        case(state)
+        0: begin
+            //represents idle
+            if(serial_input == 0) begin
+            startBaud <= 1;
+            end
+        end
+        1: begin
+            if(bit_counter==8) begin
+                byte_packed <= 1;
+                delayOneMomentPliz <= 1;
+            end
+        end
+        endcase
+    end
+    always @(posedge baud_clk) begin
+        case(state)
+        0: begin
+            //represents idle
+            if(serial_input == 0) begin
+                state <= 1;
+            end
+        end
+        1: begin
+            if(bit_counter<8) begin
+            parallel_data[7-bit_counter] <= serial_input;
+            bit_counter <= bit_counter+1;
+            end
+        end
+        endcase
+    end
+    always @(posedge clk ) begin
+        if(delayOneMomentPliz) begin
+            reset_internal <= 1;
+        end
+    end
+    //To be or not to be, that is the question
+    //To do is to be
+    //To be is to do
+    //Doo Bee Doo Bee Doo Ba
 endmodule
 
 module TxD(
@@ -355,104 +366,208 @@ module TxD(
     input reset,
     input [7:0] byte_processed,
     input receiveData,
+    input baud_clk,
     output reg serial_output,
-    output reg [3:0] bit_counter, //4 bit because of overflow error
-    output reg baud_clk
+    output reg sending_done,
+    output reg busy
 );
-    reg dataReady;
-    reg [7:0]Data;
-    reg [9:0] baud_counter;
+    reg [1:0] state;
     reg reset_internal;
+    reg startTheSending;
+    reg [3:0] bit_counter;
+    //we have baud, but some things must be done on clk
 
-    always@(posedge clk) begin
-        if(receiveData) begin
-            Data <= byte_processed; dataReady <= 1;
-        end
-    end
-
-    always@(posedge clk or posedge reset or posedge reset_internal) begin
+    always@(posedge(clk) or posedge(reset) or posedge(reset_internal)) begin
         if(reset | reset_internal) begin
-            baud_counter<=0; baud_clk<=0;
-        end
-        if(baud_counter<434) begin
-            baud_counter<= baud_counter+1;
-        end
-
-        if(baud_counter==434) begin
-            baud_clk <= ~baud_clk;
-            baud_counter <= 0;
+            serial_output <= 1'b1;
+            bit_counter <= 4'b0000;
+            sending_done <= 1'b0;
+            busy <= 1'b0;
+            state <= 2'b00;
         end
     end
+    //no need to store Data anymore since we have controlToTxD now
+    always@(posedge(baud_clk)) begin
+        //only related to data sending
+        //also state is updated here
+        case (state)
+            2'd0: begin
+                serial_output <= 1'b1;
+                if(startTheSending) begin
+                    state <= 2'd1;
+                end
+            end
+            2'd1: begin
+                serial_output <= 1'b0;
+                state <= 2'd2;
+                bit_counter <= 4'd0;
+            end
+            2'd2: begin
+                serial_output <= byte_processed[bit_counter];
+                bit_counter <= bit_counter + 4'd1;
+                if(bit_counter==4'd7) begin
+                    state <= 2'd3;
+                end
+            end
+        endcase
+    end
+    always@(posedge(clk)) begin
+        //only related to data sending
+        //also state is updated here
+        case (state)
+            2'd0: begin
+                sending_done<= 1'b0;
+                if(receiveData) begin
+                    busy <= 1'b1;
+                    startTheSending <= 1'b1;
+                end
+            end
+            2'd1: begin
+                startTheSending <= 1'b0;
+                serial_output <= 1'b0;
+            end
+            2'd2: begin
+                serial_output <= byte_processed[bit_counter];
+            end
+            2'd3: begin
+                sending_done <= 1;
+                state <= 2'd0;
+                serial_output <= 1'b1;
+                startTheSending <= 0;
+                busy <= 0;
+            end
+        endcase
+    end
+endmodule
 
-    always @(posedge baud_clk or posedge reset or posedge reset_internal) begin
-        if (reset | reset_internal) begin
+module controlToTxD (
+    input clk,
+    input rst,
+    input sendData,
+    input [15:0] min_distance_angle, max_distance_angle,
+    input [7:0] CT,
+    output serial_output
+);
+    //store values of CT, min_dist etc in local regs to ensure we can start the next cycle
+    reg [15:0] min_distance_angle_local,max_distance_angle_local;
+    reg [7:0] CT_local;
+    reg [2:0] steps;
+    reg receiveData;
+    reg [7:0] byteAtHandReg;
+    wire [7:0] byteAtHand;
+    reg internalReset;
+    reg [8:0] baud_counter;
+    reg baud_clk;
+    reg TxD_reset;
+    wire busy;
+    wire sendingDone;
+    wire baud_clk_wire,TxD_reset_wire;
+    assign baud_clk_wire = baud_clk;
+    assign byteAtHand = byteAtHandReg;
+    assign TxD_reset_wire = TxD_reset;
+    TxD transmiterr(
+        .clk(clk),
+        .reset(TxD_reset_wire),
+        .baud_clk(baud_clk_wire),
+        .byte_processed(byteAtHand),
+        .receiveData(receiveData),
+        .sending_done(sendingDone),//ensure this is ON only for 1 clk
+        .serial_output(serial_output),
+        .busy(busy),//add an output reg named busy that I can use here
+    );
+    //create a baud clock here for reference, we will use that as reference in the future
+    always@(posedge clk) begin
+    if(baud_counter<434) begin
+        baud_counter<= baud_counter+1;
+    end
+
+    if(baud_counter==434) begin
+        baud_clk <= ~baud_clk;
+        baud_counter <= 0;
+    end
+    end
+    always@(posedge(clk)) begin
+        if (rst | internalReset) begin
+            //write reset conditions
+            steps <= 3'b111;
+            TxD_reset <= 1'b1;
+            internalReset <= 1'b0;
+            baud_clk <= 0;
             baud_counter <= 0;
-            bit_counter <= 0;
-            serial_output <= 1;
-            dataReady <= 0;
-            reset_internal<=0;
         end else begin
-                if(dataReady==1 && bit_counter<=8) begin
-                    //start bit
-                    if(bit_counter==0) begin
-                        serial_output <= 0;
-                        bit_counter <= bit_counter + 1;
-                    end
-                    //1st bit
-                    if(bit_counter==1) begin
-                        serial_output <= Data[8-bit_counter];
-                        bit_counter <= bit_counter + 1;
-                    end
-                    //2nd bit
-                    else if(bit_counter==2) begin
-                        serial_output <= Data[8-bit_counter];
-                        bit_counter <= bit_counter + 1;
-                    end
-                    //3rd bit
-                    else if(bit_counter==3) begin
-                        serial_output <= Data[8-bit_counter];
-                        bit_counter <= bit_counter + 1;
-                    end
-                    //4th bit
-                    else if(bit_counter==4) begin
-                        serial_output <= Data[8-bit_counter];
-                        bit_counter <= bit_counter + 1;
-                    end
-                    //5th bit
-                    else if(bit_counter==5) begin
-                        serial_output <= Data[8-bit_counter];
-                        bit_counter <= bit_counter + 1;
-                    end
-                    //6th bit
-                    else if(bit_counter==6) begin
-                        serial_output <= Data[8-bit_counter];
-                        bit_counter <= bit_counter + 1;
-                    end
-                    //7th bit
-                    else if(bit_counter==7) begin
-                        serial_output <= Data[8-bit_counter];
-                        bit_counter <= bit_counter + 1;
-                    end
-                    //8th bit
-                    else if(bit_counter==8) begin
-                        serial_output <= Data[8-bit_counter];
-                        bit_counter <= bit_counter + 1;
-                    end
-                    else reset_internal<=1;
-                end
-                //idle state
-                else begin
-                    if (dataReady == 1) begin
-                        bit_counter <= 0;
-                        baud_counter <= 43;
-                        serial_output <= 0;
-                        dataReady <= 0;
-                    end
-
-                    else begin
-                        serial_output <= 1;
-                    end
-                end
+        if(sendData) begin
+            CT_local <= CT;
+            min_distance_angle_local <= min_distance_angle;
+            max_distance_angle_local <= max_distance_angle;
+            byteAtHandReg <= CT;
+            steps <= 3'b000;
+            TxD_reset <= 1'b0;
+        end else begin
+        if(steps==3'b000) begin
+            if((!busy) & (!sendingDone)) begin
+                receiveData <= 1'b1;
+            end else if (busy) begin
+                //now transmitter is busy
+                receiveData <= 1'b0;
+            end if (sendingDone) begin
+                steps <= 3'b001;
+                TxD_reset <= 1'b1;
+                byteAtHandReg <= min_distance_angle_local[7:0];
+            end
+        end
+        if(steps==3'b001) begin
+            if(TxD_reset) begin
+                TxD_reset <= 1'b0;
+            end else begin
+            if((!busy) & (!sendingDone)) begin
+                receiveData <= 1'b1;
+            end else if (busy) begin
+                //now transmitter is busy
+                receiveData <= 1'b0;
+            end if (sendingDone) begin
+                steps <= 3'b010;
+                TxD_reset <= 1'b1;
+                byteAtHandReg <= min_distance_angle_local[15:8];
+            end
+            end
+        end
+        if(steps==3'b010) begin
+            if(TxD_reset) begin
+                TxD_reset <= 1'b0;
+            end else begin
+            if((!busy) & (!sendingDone)) begin
+                receiveData <= 1'b1;
+            end else if (busy) begin
+                //now transmitter is busy
+                receiveData <= 1'b0;
+            end if (sendingDone) begin
+                steps <= 3'b010;
+                TxD_reset <= 1'b1;
+                byteAtHandReg <= max_distance_angle_local[7:0];
+            end
+            end
+        end
+        if(steps==3'b011) begin
+            if(TxD_reset) begin
+                TxD_reset <= 1'b0;
+            end else begin
+            if((!busy) & (!sendingDone)) begin
+                receiveData <= 1'b1;
+            end else if (busy) begin
+                //now transmitter is busy
+                receiveData <= 1'b0;
+            end if (sendingDone) begin
+                steps <= 3'b010;
+                TxD_reset <= 1'b1;
+                byteAtHandReg <= max_distance_angle_local[15:8];
+            end
+            end
+        end
+        if(steps==3'b100) begin
+            //sending is done, now reset this module
+            internalReset <= 1'b1;
+        end
+        end
         end
     end
 endmodule
@@ -461,7 +576,6 @@ module topModule(
     input wire receiveData,
     input wire clk,
     output wire transmitData
-    // We don't think you will need any other inputs and outputs, but feel free to add what you want here, and mention it while submitting your code
 );
 
     // Include your submodules for receiving, processing and transmitting your data here, we have included sample modules without any inputs and outputs for now
