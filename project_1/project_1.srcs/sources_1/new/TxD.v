@@ -34,9 +34,6 @@ module TxD #(
 
     reg [4:0] state;  
     reg [3:0] counter = 0; 
-    initial begin
-        r_clock <= 0;
-    end
     always @(negedge start_signal_bit) begin
         shift_reg[15:0] <= max_distance_angle;
         shift_reg[31:16] <= min_distance_angle;
@@ -48,7 +45,8 @@ module TxD #(
             Tx        <= 1'b1;     
             state     <= Idle;      
             shift_reg <= 0;    
-            counter   <= 0;    
+            counter   <= 0;
+            r_clock <= 0;    
         end else begin
             case (state)
                 Idle: begin

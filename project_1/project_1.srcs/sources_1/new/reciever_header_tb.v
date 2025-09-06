@@ -22,8 +22,8 @@ module reciever_header_tb;
     wire [47:0] shift;
     wire [7:0] r_clock;
     // Instantiate UART RX
-    rx_header dut (tb_Clock, tb_Rx_Serial, rx_dv, dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4);
-    distanceProcess dis(tb_Clock, rx_dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, data_validation, obs_alert, mad, mia);
+    rx_header dut (tb_Clock, tb_Rx_Serial, reset, rx_dv, dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4);
+    distanceProcess dis(tb_Clock, rx_dv, reset, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, data_validation, obs_alert, mad, mia);
     TxD tx(tb_Clock, reset, data_validation, mad, mia, obs_alert, Tx, shift, r_clock);
 
     // Clock generation: 10 MHz
@@ -53,7 +53,10 @@ module reciever_header_tb;
 
     initial begin
         // Initialize input
+        reset = 1'b1;
+        #1000;
         reset = 1'b0;
+
         tb_Rx_Serial = 1;
 
         // Wait for reset
@@ -66,13 +69,13 @@ module reciever_header_tb;
         uart_send_byte(8'b10101010); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
-        uart_send_byte(8'b00000001); // Test for pattern 0x55
+        uart_send_byte(8'b00000100); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
         uart_send_byte(8'b01101001); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
-        uart_send_byte(8'b11111111); // Test for pattern 0x55
+        uart_send_byte(8'b10000111); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
         
         uart_send_byte(8'b00110010); // Test for pattern 0x55
@@ -81,10 +84,28 @@ module reciever_header_tb;
         uart_send_byte(8'b10110001); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
         
-        uart_send_byte(8'b00001111); // Test for pattern 0x55
+        uart_send_byte(8'b00000001); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
-        uart_send_byte(8'b00110001); // Test for pattern 0x55
+        uart_send_byte(8'b00000000); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+        
+        uart_send_byte(8'b00000000); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+
+        uart_send_byte(8'b10110001); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+        
+        uart_send_byte(8'b10100110); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+
+        uart_send_byte(8'b10111101); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+        
+        uart_send_byte(8'b11001001); // Test for pattern 0x55
+        repeat(10*BIT_PERIOD) @(posedge tb_Clock);
+
+        uart_send_byte(8'b11100001); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
     end
