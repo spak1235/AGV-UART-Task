@@ -282,11 +282,11 @@ module RxD (
     input  reset,
     input  serial_input,
     output reg [7:0] parallel_data,
-    output reg byte_packed,
-    output reg state,
-    output reg [3:0] bit_counter
+    output reg byte_packed
 );
     //once done processing 1 surge of reset_internal
+    reg state;
+    reg [3:0] bit_counter;
     reg [8:0] baud_counter;
     reg startBaud;
     reg reset_internal;
@@ -444,13 +444,11 @@ module controlToTxD (
     input clk,
     input rst,
     input sendData,
-    input [15:0] min_distance_angle, max_distance_angle,
-    input [7:0] CT,
+    input [15:0] min_distance_angle, max_distance_angle,obs_alert,
     output serial_output
 );
     //store values of CT, min_dist etc in local regs to ensure we can start the next cycle
-    reg [15:0] min_distance_angle_local,max_distance_angle_local;
-    reg [7:0] CT_local;
+    reg [15:0] min_distance_angle_local,max_distance_angle_local,obs_alert_local;
     reg [2:0] steps;
     reg receiveData;
     reg [7:0] byteAtHandReg;
@@ -496,10 +494,10 @@ module controlToTxD (
             baud_counter <= 0;
         end else begin
         if(sendData) begin
-            CT_local <= CT;
+            obs_alert_local <= obs_alert;
             min_distance_angle_local <= min_distance_angle;
             max_distance_angle_local <= max_distance_angle;
-            byteAtHandReg <= CT;
+            byteAtHandReg <= obs_alert[7:0];
             steps <= 3'b000;
             TxD_reset <= 1'b0;
         end else begin
@@ -512,7 +510,7 @@ module controlToTxD (
             end if (sendingDone) begin
                 steps <= 3'b001;
                 TxD_reset <= 1'b1;
-                byteAtHandReg <= min_distance_angle_local[7:0];
+                byteAtHandReg <= obs_alert_local[15:8];
             end
         end
         if(steps==3'b001) begin
@@ -527,7 +525,7 @@ module controlToTxD (
             end if (sendingDone) begin
                 steps <= 3'b010;
                 TxD_reset <= 1'b1;
-                byteAtHandReg <= min_distance_angle_local[15:8];
+                byteAtHandReg <= min_distance_angle_local[7:0];
             end
             end
         end
@@ -541,9 +539,9 @@ module controlToTxD (
                 //now transmitter is busy
                 receiveData <= 1'b0;
             end if (sendingDone) begin
-                steps <= 3'b010;
+                steps <= 3'b011;
                 TxD_reset <= 1'b1;
-                byteAtHandReg <= max_distance_angle_local[7:0];
+                byteAtHandReg <= min_distance_angle_local[15:8];
             end
             end
         end
@@ -557,13 +555,29 @@ module controlToTxD (
                 //now transmitter is busy
                 receiveData <= 1'b0;
             end if (sendingDone) begin
-                steps <= 3'b010;
+                steps <= 3'b100;
+                TxD_reset <= 1'b1;
+                byteAtHandReg <= max_distance_angle_local[7:0];
+            end
+            end
+        end
+        if(steps==3'b100) begin
+            if(TxD_reset) begin
+                TxD_reset <= 1'b0;
+            end else begin
+            if((!busy) & (!sendingDone)) begin
+                receiveData <= 1'b1;
+            end else if (busy) begin
+                //now transmitter is busy
+                receiveData <= 1'b0;
+            end if (sendingDone) begin
+                steps <= 3'b101;
                 TxD_reset <= 1'b1;
                 byteAtHandReg <= max_distance_angle_local[15:8];
             end
             end
         end
-        if(steps==3'b100) begin
+        if(steps==3'b101) begin
             //sending is done, now reset this module
             internalReset <= 1'b1;
         end
@@ -577,10 +591,63 @@ module topModule(
     input wire clk,
     output wire transmitData
 );
+    wire reset;
+    wire [7:0] parallel_data;
+    wire byte_packed;
+    wire [15:0] min_distance_angle;
+    wire [15:0] max_distance_angle;
+    wire [15:0] obs_alert;
+    wire sendData;
+// module RxD (
+//     input  clk,
+//     input  reset,
+//     input  serial_input,
+//     output reg [7:0] parallel_data,
+//     output reg byte_packed
+// );
 
-    // Include your submodules for receiving, processing and transmitting your data here, we have included sample modules without any inputs and outputs for now
-    RxD R0();
-    distanceProcess D0();
-    TxD T0();
+// module distanceProcess (
+//     input [7:0] data,
+//     input clk,//processor clock
+//     input rst,
+//     input takeData, //takeData tells us if we should interpret the data or not.
+//     //takeData will go 1 for 1 clk cycle or sm
+//     //takeData will be used only when data variable is being used
+//     output reg [15:0] max_distance_angle, min_distance_angle, obs_alert,
+//     output reg sendData
+// );
 
+// module controlToTxD (
+//     input clk,
+//     input rst,
+//     input sendData,
+//     input [15:0] min_distance_angle, max_distance_angle,obs_alert
+//     output serial_output
+// );
+    RxD Bulbasaur(
+        .clk(clk),
+        .reset(reset),
+        .serial_input(receiveData),
+        .parallel_data(parallel_data),
+        .byte_packed(byte_packed)
+    );
+    distanceProcess Charmander(
+        .data(parallel_data),
+        .clk(clk),
+        .reset(reset),
+        .takeData(byte_packed),
+        .min_distance_angle(min_distance_angle),
+        .max_distance_angle(max_distance_angle),
+        .obs_alert(obs_alert),
+        .sendData(sendData)
+    );
+    controlToTxD Squirlte(
+        .clk(clk),
+        .rst(reset),
+        .sendData(sendData),
+        .min_distance_angle(min_distance_angle),
+        .max_distance_angle(max_distance_angle),
+        .obs_alert(obs_alert),
+        .serial_output(transmitData)
+    );
 endmodule
