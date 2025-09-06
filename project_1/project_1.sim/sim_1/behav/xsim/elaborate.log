@@ -7,12 +7,13 @@ Starting static elaboration
 Pass Through NonSizing Optimizer
 Completed static elaboration
 Starting simulation data flow analysis
+WARNING: [XSIM 43-4100] "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
+WARNING: [XSIM 43-4100] "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
 Completed simulation data flow analysis
 Time Resolution for simulation is 1ps
 Compiling module xil_defaultlib.uart_rx
 Compiling module xil_defaultlib.rx_header
 Compiling module xil_defaultlib.distanceProcess
-Compiling module xil_defaultlib.baud_generator_default
 Compiling module xil_defaultlib.TxD
 Compiling module xil_defaultlib.reciever_header_tb
 Compiling module xil_defaultlib.glbl

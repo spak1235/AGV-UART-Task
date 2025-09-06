@@ -1,13 +1,14 @@
 module reciever_header_tb;
 
     // Parameters
-    localparam CLK_FREQ_HZ = 10000000;        // 10 MHz system clock
-    localparam BAUD_RATE   = 115200;          // UART baud rate
-    localparam CLKS_PER_BIT = 87;             // Must match uart_rx parameter
-    localparam BIT_PERIOD = CLKS_PER_BIT;     // Clock cycles per UART bit
+    localparam CLK_FREQ_HZ = 10000000;
+    localparam BAUD_RATE = 115200;
+    localparam CLKS_PER_BIT = 87;
+    localparam BIT_PERIOD = CLKS_PER_BIT;
 
     reg tb_Clock;
     reg tb_Rx_Serial;
+    reg reset;
     wire [7:0] tb_Rx_Byte_2;
     wire [15:0] tb_Rx_Byte_3;
     wire [15:0] tb_Rx_Byte_4;
@@ -15,14 +16,15 @@ module reciever_header_tb;
     wire [15:0] mad;
     wire [15:0] mia;
     wire data_validation;
-    wire tick;
+    wire rx_dv;
     wire Tx;
     wire dv;
+    wire [47:0] shift;
+    wire [7:0] r_clock;
     // Instantiate UART RX
-    rx_header dut (tb_Clock, tb_Rx_Serial, dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4);
-    distanceProcess dis(tb_Clock, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, data_validation, obs_alert, mad, mia);
-    baud_generator baud(tb_Clock, tick);
-    TxD tx(tb_Clock, data_validation, tick, mad, mia, obs_alert, Tx);
+    rx_header dut (tb_Clock, tb_Rx_Serial, rx_dv, dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4);
+    distanceProcess dis(tb_Clock, rx_dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, data_validation, obs_alert, mad, mia);
+    TxD tx(tb_Clock, reset, data_validation, mad, mia, obs_alert, Tx, shift, r_clock);
 
     // Clock generation: 10 MHz
     initial tb_Clock = 0;
@@ -51,6 +53,7 @@ module reciever_header_tb;
 
     initial begin
         // Initialize input
+        reset = 1'b0;
         tb_Rx_Serial = 1;
 
         // Wait for reset
@@ -84,8 +87,6 @@ module reciever_header_tb;
         uart_send_byte(8'b00110001); // Test for pattern 0x55
         repeat(10*BIT_PERIOD) @(posedge tb_Clock);
 
-        // Finish simulation
-        $finish;
     end
 
 endmodule

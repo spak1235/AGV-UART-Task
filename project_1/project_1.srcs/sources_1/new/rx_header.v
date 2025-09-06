@@ -1,6 +1,7 @@
 module rx_header (
     input clk,
     input serial,
+    output reg rx_dv,
     output reg general_dv,
     output reg [7:0] s_CT,
     output reg [15:0] s_FSA,
@@ -16,10 +17,12 @@ module rx_header (
     localparam lsa_1 = 4'b0111;
     localparam sample = 4'b1000;
     localparam sample_1 = 4'b1001;
+    localparam writing = 4'b1100;
+    localparam cleanup = 4'b1111;
     wire [7:0] wi_general;
     wire wi_dv;
-    reg [3:0] state = 4'b0000; 
-    reg [7:0] t_general = 8'h00;
+    reg [3:0] state; 
+    reg [7:0] t_general;
     reg [15:0] sample_mem [255:0];
     reg [7:0] sample_index = 0;
     reg [7:0] sample_expected;
@@ -34,6 +37,7 @@ module rx_header (
         for (i=0; i<256; i=i+1) begin
             sample_mem[i] <= 16'h0000;
         end
+        rx_dv <= 1'b0;
     end
 
     uart_rx general( clk, serial, wi_dv, wi_general);
@@ -116,19 +120,30 @@ module rx_header (
             sample_1: begin
                 if (wi_dv == 1'b1) begin
                     s_sample[15:8] <= wi_general;
-                    
-                    sample_mem[sample_index] <= s_sample;
-
-                    sample_index <= sample_index+1;
-                    $fdisplay(file, "%16b", sample_mem[sample_index]);
-                    
-                    if (sample_index == sample_expected) begin
-                        state <= idle;
-                    end
-                    else begin
-                        state <= sample;
-                    end
+                    state <= writing;
                 end
+            end
+
+            writing: begin
+                sample_mem[sample_index] <= s_sample;
+                $fdisplay(file, "%16b", s_sample);
+
+                if (sample_index == sample_expected - 1) begin
+                    rx_dv <= 1'b1;
+                    state <= cleanup;
+                end else begin
+                    sample_index <= sample_index + 1;
+                    state <= sample;
+                end
+            end
+
+            cleanup: begin
+                rx_dv <= 1'b0;
+                state <= idle;
+            end
+
+            default: begin
+                state <= idle;
             end
             
         endcase
