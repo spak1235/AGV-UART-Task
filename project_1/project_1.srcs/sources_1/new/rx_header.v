@@ -1,6 +1,7 @@
 module rx_header (
     input clk,
     input serial,
+    input reset,
     output reg rx_dv,
     output reg general_dv,
     output reg [7:0] s_CT,
@@ -32,121 +33,129 @@ module rx_header (
     integer file;
     integer i;
 
-    initial begin 
-        file = $fopen("sample_mem.mem", "w");
-        for (i=0; i<256; i=i+1) begin
-            sample_mem[i] <= 16'h0000;
-        end
-        rx_dv <= 1'b0;
-    end
-
     uart_rx general( clk, serial, wi_dv, wi_general);
 
     always @(posedge clk) begin
-        t_general <= wi_general;
-        general_dv <= wi_dv;
-        case(state)
-            idle: begin
-                if (wi_dv == 1'b1) begin
-                    if (wi_general == 8'h55) begin
-                        s_header[7:0] <= wi_general;
-                        state <= header_1;
+        if (reset) begin
+            file = $fopen("sample_mem.mem", "w");
+            for (i=0; i<256; i=i+1) begin
+                sample_mem[i] <= 16'h0000;
+            end
+            rx_dv <= 1'b0;
+            state <= idle;
+            t_general <= 0;
+            sample_index <= 0;
+            sample_expected <= 0;
+            s_header <= 0;
+            s_sample <= 0;
+        end
+
+        else begin
+            t_general <= wi_general;
+            general_dv <= wi_dv;
+            case(state)
+                idle: begin
+                    if (wi_dv == 1'b1) begin
+                        if (wi_general == 8'h55) begin
+                            s_header[7:0] <= wi_general;
+                            state <= header_1;
+                        end
+                        else begin
+                            state <= idle;
+                        end
                     end
                     else begin
                         state <= idle;
                     end
                 end
-                else begin
-                    state <= idle;
-                end
-            end
-            
-            header_1: begin
-                if (wi_dv == 1'b1) begin
-                    if (wi_general == 8'hAA) begin
-                        s_header[15:8] <= wi_general;
-                        state <= ct;
+                
+                header_1: begin
+                    if (wi_dv == 1'b1) begin
+                        if (wi_general == 8'hAA) begin
+                            s_header[15:8] <= wi_general;
+                            state <= ct;
+                        end
+                    end
+                    else begin
+                        state <= header_1;
                     end
                 end
-                else begin
-                    state <= header_1;
-                end
-            end
 
-            ct: begin
-                if (wi_dv == 1'b1) begin
-                    s_CT <= wi_general;
-                    state <= fsa;
-                    sample_expected <= wi_general;
-                    sample_index <= 0;
+                ct: begin
+                    if (wi_dv == 1'b1) begin
+                        s_CT <= wi_general;
+                        state <= fsa;
+                        sample_expected <= wi_general;
+                        sample_index <= 0;
+                    end
                 end
-            end
 
-            fsa: begin
-                if (wi_dv == 1'b1) begin
-                    s_FSA[7:0] <= wi_general;
-                    state <= fsa_1;
+                fsa: begin
+                    if (wi_dv == 1'b1) begin
+                        s_FSA[7:0] <= wi_general;
+                        state <= fsa_1;
+                    end
                 end
-            end
-            
-            fsa_1: begin
-                if (wi_dv == 1'b1) begin
-                    s_FSA[15:8] <= wi_general;
-                    state <= lsa;
+                
+                fsa_1: begin
+                    if (wi_dv == 1'b1) begin
+                        s_FSA[15:8] <= wi_general;
+                        state <= lsa;
+                    end
                 end
-            end
 
-            lsa: begin
-                if (wi_dv == 1'b1) begin
-                    s_LSA[7:0] <= wi_general;
-                    state <= lsa_1;
+                lsa: begin
+                    if (wi_dv == 1'b1) begin
+                        s_LSA[7:0] <= wi_general;
+                        state <= lsa_1;
+                    end
                 end
-            end
-            
-            lsa_1: begin
-                if (wi_dv == 1'b1) begin
-                    s_LSA[15:8] <= wi_general;
-                    state <= sample;
+                
+                lsa_1: begin
+                    if (wi_dv == 1'b1) begin
+                        s_LSA[15:8] <= wi_general;
+                        state <= sample;
+                    end
                 end
-            end
 
-            sample: begin
-                if (wi_dv == 1'b1) begin
-                    s_sample[7:0] <= wi_general;
-                    state <= sample_1;
+                sample: begin
+                    if (wi_dv == 1'b1) begin
+                        s_sample[7:0] <= wi_general;
+                        state <= sample_1;
+                    end
                 end
-            end
-            
-            sample_1: begin
-                if (wi_dv == 1'b1) begin
-                    s_sample[15:8] <= wi_general;
-                    state <= writing;
+                
+                sample_1: begin
+                    if (wi_dv == 1'b1) begin
+                        s_sample[15:8] <= wi_general;
+                        state <= writing;
+                    end
                 end
-            end
 
-            writing: begin
-                sample_mem[sample_index] <= s_sample;
-                $fdisplay(file, "%16b", s_sample);
+                writing: begin
+                    sample_mem[sample_index] <= s_sample;
+                    $fdisplay(file, "%16b", s_sample);
 
-                if (sample_index == sample_expected - 1) begin
-                    rx_dv <= 1'b1;
-                    state <= cleanup;
-                end else begin
-                    sample_index <= sample_index + 1;
-                    state <= sample;
+                    if (sample_index == sample_expected - 1) begin
+                        rx_dv <= 1'b1;
+                        state <= cleanup;
+                    end else begin
+                        sample_index <= sample_index + 1;
+                        state <= sample;
+                    end
                 end
-            end
 
-            cleanup: begin
-                rx_dv <= 1'b0;
-                state <= idle;
-            end
+                cleanup: begin
+                    rx_dv <= 1'b0;
+                    state <= idle;
+                end
 
-            default: begin
-                state <= idle;
-            end
-            
-        endcase
+                default: begin
+                    state <= idle;
+                end
+                
+            endcase
+        end
     end
 
 endmodule 
