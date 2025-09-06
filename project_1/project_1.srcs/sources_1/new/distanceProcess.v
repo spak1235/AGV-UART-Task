@@ -1,9 +1,10 @@
 module distanceProcess (
     input clk,
+    input rx_dv,
     input [7:0] ct,
     input [15:0] FSA,
     input [15:0] LSA,
-    output reg data_validation,
+    output reg dv,
     output reg [15:0] obs_alert,
     output reg [15:0] max_dist_angle,
     output reg [15:0] min_dist_angle
@@ -15,6 +16,16 @@ module distanceProcess (
     reg [7:0] min_dist_index;
     reg [15:0] max_dist;
     reg [15:0] min_dist;
+    //reg dv;
+    reg final_dv;
+    reg data_validation;
+    reg [7:0] t_ct = 0;
+    reg [15:0] t_FSA = 0;
+    reg [15:0] t_LSA = 0;
+    
+    reg [7:0] tt_ct = 0;
+    reg [15:0] tt_FSA = 0;
+    reg [15:0] tt_LSA = 0;
     
     localparam ct_idle = 1'b0;
     localparam ct_start = 1'b1;
@@ -26,27 +37,34 @@ module distanceProcess (
 
     initial begin
         $readmemh("sample_mem.mem", sample_mem);
-        obs_alert <= 0;
-        max_dist_angle <= 0;
-        min_dist_angle <= 0;
     end
 
     always @(posedge clk) begin
+        final_dv <= rx_dv;
+        if (rx_dv) begin
+            t_ct <= ct;
+            t_FSA <= FSA;
+            t_LSA <= LSA;
+        end
         case (ct_state)
             ct_idle: begin
-                ct_counter <= 0;
+                ct_counter <= 8'h00;
                 data_validation <= 1'b0;
                 temp_obs <= 16'h0000;
                 max_dist <= 0;
                 min_dist <= 16'hFFFF;
-                max_dist_index <= 0;
-                min_dist_index <= 0;
+                max_dist_index <= 8'h00;
+                min_dist_index <= 8'h0;
                 k <= 0;
                 ct_state <= ct_start;
+                tt_ct <= ct;
+                tt_FSA <= FSA;
+                tt_LSA <= LSA;
             end
 
             ct_start: begin
                 if (ct_counter < ct) begin
+                    data_validation <= 1'b0;
                     if (ct_counter < 8 && ct[ct_counter]) begin
                         k <= ct_counter[3:0];
                     end
@@ -54,7 +72,6 @@ module distanceProcess (
                     if (ct_counter < 16) begin
                         if (sample_mem[ct_counter] < 102.4) begin
                             temp_obs <= temp_obs | (1 << ct_counter);
-                            obs_alert <= temp_obs;
                         end
                     end
 
@@ -64,14 +81,18 @@ module distanceProcess (
                     end
 
                     if (sample_mem[ct_counter] < min_dist) begin
-                        min_dist       <= sample_mem[ct_counter];
+                        min_dist <= sample_mem[ct_counter];
                         min_dist_index <= ct_counter[7:0];
                     end
                 end
 
-                if (ct_counter == ct-1) begin
+                if (ct_counter^(ct-1) == 1'b0) begin
                     data_validation <= 1'b1;
+                    dv <= final_dv;
                     ct_state <= ct_idle;
+                    obs_alert <= temp_obs;
+                    max_dist_angle <= FSA + max_dist_index * ((t_LSA - t_FSA) << k);
+                    min_dist_angle <= FSA + min_dist_index * ((t_LSA - t_FSA) << k);
                 end
 
                 ct_counter <= ct_counter + 1;
@@ -81,14 +102,6 @@ module distanceProcess (
                 ct_state <= ct_idle;
             end
         endcase
-    end
-
-    always @(posedge clk) begin
-        if (data_validation) begin
-            obs_alert <= temp_obs;
-            max_dist_angle <= FSA + max_dist_index * ((LSA - FSA) << k);
-            min_dist_angle <= FSA + min_dist_index * ((LSA - FSA) << k);
-        end
     end
 
 endmodule
