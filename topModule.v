@@ -46,29 +46,37 @@ module distanceProcess (
     //takeData will go 1 for 1 clk cycle or sm
     //takeData will be used only when data variable is being used
     output reg [15:0] max_distance_angle, min_distance_angle, obs_alert,
-    output reg sendData
+    output reg sendData,
+    // tb checking
+    output reg [1:0] headCheck,
+    output reg [7:0] CT,
+    output reg [15:0] FSA,LSA,
+    output reg [2:0] counter1,
+    output reg [7:0] counter2,
+    output reg [15:0] min_distance,max_distance,AtHand,min_distance_idx,max_distance_idx,
+    output reg [2:0] quo_rem_reg
 );
      reg rst_state;
-     reg [1:0] headCheck;
-     reg [7:0] CT,counter2,headerA,headerB,temp;
-     reg [15:0] FSA,LSA,obs_distance;
-     reg [15:0] min_distance,max_distance,AtHand,min_distance_idx,max_distance_idx;
-     reg [2:0] counter1; //counter1 is used during FSA,LSA and CT
+     
+     reg [7:0] headerA,headerB,temp;
+     reg [15:0] obs_distance;
+     
+      //counter1 is used during FSA,LSA and CT
      reg divider_reset;
      reg microCounter;//We will use this when interpreting data of 2N size
      reg [31:0] numerator_min,numerator_max;
      reg clkDelayer,hipHop,anotherClkDelayer;
      wire [31:0] quo_min,rem_min,quo_max,rem_max;
      wire busy_min,busy_max,division_done_min,division_done_max;
-     reg [1:0] quo_rem_reg;
      wire divider_reset_wire;
+     reg sendDataReg;
     //Make a reset state, which assigns values to when it is ON
     //We will call reset once a signal is done processing to prepare for the next signal
     always @(posedge(clk) or posedge(rst) or posedge(rst_state)) begin
         if(rst|rst_state) begin
             headCheck <= 2'b00;
-            headerA <= 8'h55;
-            headerB <= 8'hAA;
+            headerA <= 8'hAA;
+            headerB <= 8'h55;
             rst_state <= 1'b0;
             counter1 <= 3'b000;
             counter2 <= 8'h00;
@@ -81,9 +89,12 @@ module distanceProcess (
             obs_alert <= 16'h0000;
             sendData <= 1'b0;
             divider_reset<=1'b1;
-            quo_rem_reg <= 2'b0;
+            quo_rem_reg <= 3'b000;
             clkDelayer <= 1'b1;
             anotherClkDelayer <= 1'b1;
+        end
+        if(rst) begin
+            sendDataReg <= 1'b0;
         end
     end
     //See if headCheck is 0
@@ -261,16 +272,19 @@ always @(posedge(clk)) begin
             anotherClkDelayer <= ~anotherClkDelayer;
         end else begin
         divider_reset <= 1'b0;
-        if ((!divider_reset)&(division_done_max)&(division_done_min)&(quo_rem_reg==2'b00)) begin
+        if ((!divider_reset)&(division_done_max)&(division_done_min)&(quo_rem_reg==3'b000)) begin
             min_distance_angle <= FSA+quo_min;
             max_distance_angle <= FSA+quo_max;
-            quo_rem_reg <= 2'b01;
-        end if(quo_rem_reg==2'b01) begin
+            quo_rem_reg <= 3'b001;
+        end if(quo_rem_reg==3'b001) begin
             min_distance_angle <= FSA+quo_min;
             max_distance_angle <= FSA+quo_max;
-            quo_rem_reg <= 2'b11;
-        end if(quo_rem_reg==2'b11) begin
+            quo_rem_reg <= 3'b011;
+        end if(quo_rem_reg==3'b011) begin
             sendData <= 1'b1;
+            quo_rem_reg <= 3'b100;
+        end if(quo_rem_reg==3'b100) begin
+            sendData <= 1'b0;
         end
         end
         end
@@ -282,11 +296,11 @@ module RxD (
     input  reset,
     input  serial_input,
     output reg [7:0] parallel_data,
-    output reg byte_packed
+    output reg byte_packed,
+    output reg state,
+    output reg [3:0] bit_counter
 );
     //once done processing 1 surge of reset_internal
-    reg state;
-    reg [3:0] bit_counter;
     reg [8:0] baud_counter;
     reg startBaud;
     reg reset_internal;
@@ -316,6 +330,7 @@ module RxD (
             bit_counter <= 0;
             byte_packed <= 0;
             delayOneMomentPliz <= 0;
+
         end
     end
     always @(posedge clk) begin
@@ -350,7 +365,7 @@ module RxD (
         end
         endcase
     end
-    always @(posedge clk ) begin
+    always @(posedge baud_clk) begin
         if(delayOneMomentPliz) begin
             reset_internal <= 1;
         end
@@ -359,7 +374,6 @@ module RxD (
     //To do is to be
     //To be is to do
     //Doo Bee Doo Bee Doo Ba
-endmodule
 
 module TxD(
     input clk,
@@ -369,11 +383,11 @@ module TxD(
     input baud_clk,
     output reg serial_output,
     output reg sending_done,
-    output reg busy
+    output reg busy,
+    output reg [1:0] state,
+    output reg startTheSending
 );
-    reg [1:0] state;
     reg reset_internal;
-    reg startTheSending;
     reg [3:0] bit_counter;
     //we have baud, but some things must be done on clk
 
@@ -445,20 +459,26 @@ module controlToTxD (
     input rst,
     input sendData,
     input [15:0] min_distance_angle, max_distance_angle,obs_alert,
-    output serial_output
+    output serial_output,
+    output sendingDone,
+    //TB
+    output reg [2:0] steps,
+    output wire busy,
+    output reg receiveData,
+    output reg [15:0] min_distance_angle_local,
+    output reg TxD_reset,
+    output [1:0] state,
+    output startTheSending,
+    output reg baud_clk
 );
     //store values of CT, min_dist etc in local regs to ensure we can start the next cycle
-    reg [15:0] min_distance_angle_local,max_distance_angle_local,obs_alert_local;
-    reg [2:0] steps;
-    reg receiveData;
+    reg [15:0] max_distance_angle_local,obs_alert_local;
     reg [7:0] byteAtHandReg;
     wire [7:0] byteAtHand;
     reg internalReset;
     reg [8:0] baud_counter;
-    reg baud_clk;
-    reg TxD_reset;
-    wire busy;
-    wire sendingDone;
+    reg extraCounter;
+    reg receiveDataWait;
     wire baud_clk_wire,TxD_reset_wire;
     assign baud_clk_wire = baud_clk;
     assign byteAtHand = byteAtHandReg;
@@ -472,6 +492,8 @@ module controlToTxD (
         .sending_done(sendingDone),//ensure this is ON only for 1 clk
         .serial_output(serial_output),
         .busy(busy),//add an output reg named busy that I can use here
+        .state(state),
+        .startTheSending(startTheSending)
     );
     //create a baud clock here for reference, we will use that as reference in the future
     always@(posedge clk) begin
@@ -498,15 +520,26 @@ module controlToTxD (
             min_distance_angle_local <= min_distance_angle;
             max_distance_angle_local <= max_distance_angle;
             byteAtHandReg <= obs_alert[7:0];
-            steps <= 3'b000;
-            TxD_reset <= 1'b0;
+            TxD_reset <= 1'b1;
+            extraCounter <= 1'b1;
+            baud_clk <= 0;
+            baud_counter <= 0;
         end else begin
+        if(extraCounter) begin
+            steps <= 3'b000;
+            extraCounter <= 0;
+            TxD_reset <= 1'b0;
+        end
         if(steps==3'b000) begin
             if((!busy) & (!sendingDone)) begin
                 receiveData <= 1'b1;
+                receiveDataWait <= 1'b0;
             end else if (busy) begin
                 //now transmitter is busy
-                receiveData <= 1'b0;
+                receiveDataWait <= 1'b1;
+                if(receiveDataWait==0) begin
+                    receiveData <= 1'b0;
+                end
             end if (sendingDone) begin
                 steps <= 3'b001;
                 TxD_reset <= 1'b1;
@@ -589,15 +622,34 @@ endmodule
 module topModule(
     input wire receiveData,
     input wire clk,
-    output wire transmitData
+    output wire transmitData,
+    output wire reset,
+    output wire [7:0] parallel_data,
+    output wire byte_packed,
+    output wire [15:0] min_distance_angle,
+    output wire [15:0] max_distance_angle,
+    output wire [15:0] obs_alert,
+    output wire sendData,
+    //distance process tb
+    output wire [1:0]headCheck,
+    output wire [7:0] CT,
+    output wire [15:0] FSA,LSA,
+    output wire [2:0] counter1,
+    output wire [7:0] counter2,
+    output wire [15:0] min_distance,max_distance,AtHand,
+    output wire sendingDone,
+    //TB transmiter
+    output wire [2:0] steps,
+    output wire [2:0] quo_rem_reg,
+    output wire busy,
+    output wire [15:0] min_distance_angle_local,
+    output wire receiveDataPliz,
+    output TxD_reset,
+    output [1:0] state,
+    output startTheSending,
+    output baud_clk
 );
-    wire reset;
-    wire [7:0] parallel_data;
-    wire byte_packed;
-    wire [15:0] min_distance_angle;
-    wire [15:0] max_distance_angle;
-    wire [15:0] obs_alert;
-    wire sendData;
+
 // module RxD (
 //     input  clk,
 //     input  reset,
@@ -634,12 +686,22 @@ module topModule(
     distanceProcess Charmander(
         .data(parallel_data),
         .clk(clk),
-        .reset(reset),
+        .rst(reset),
         .takeData(byte_packed),
         .min_distance_angle(min_distance_angle),
         .max_distance_angle(max_distance_angle),
         .obs_alert(obs_alert),
-        .sendData(sendData)
+        .sendData(sendData),
+        .headCheck(headCheck),
+        .CT(CT),
+        .LSA(LSA),
+        .FSA(FSA),
+        .counter1(counter1),
+        .counter2(counter2),
+        .min_distance(min_distance),
+        .max_distance(max_distance),
+        .AtHand(AtHand),
+        .quo_rem_reg(quo_rem_reg)
     );
     controlToTxD Squirlte(
         .clk(clk),
@@ -648,6 +710,15 @@ module topModule(
         .min_distance_angle(min_distance_angle),
         .max_distance_angle(max_distance_angle),
         .obs_alert(obs_alert),
-        .serial_output(transmitData)
+        .serial_output(transmitData),
+        .sendingDone(sendingDone),
+        .steps(steps),
+        .busy(busy),
+        .receiveData(receiveDataPliz),
+        .min_distance_angle_local(min_distance_angle_local),
+        .TxD_reset(TxD_reset),
+        .state(state),
+        .startTheSending(startTheSending),
+        .baud_clk(baud_clk)
     );
 endmodule
