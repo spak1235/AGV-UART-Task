@@ -3,14 +3,20 @@
 
 module topModule(
     input wire receiveData,
+    input wire reset,
     input wire clk,
     output wire transmitData
     // We don't think you will need any other inputs and outputs, but feel free to add what you want here, and mention it while submitting your code
 );
+    wire rx_dv;
+    wire [7:0] s_CT;
+    wire [15:0] s_LSA;
+    wire [15:0] s_FSA;
+    wire [15:0] obs_alert;
+    wire [15:0] max_dist_angle;
+    wire [15:0] min_dist_angle;
 
-    // Include your submodules for receiving, processing and transmitting your data here, we have included sample modules without any inputs and outputs for now
-    RxD R0();
-    distanceProcess D0();
-    TxD T0();
+    distanceProcess D0(clk, receiveData, reset, rx_dv, s_CT, s_FSA, s_LSA, obs_alert, max_dist_angle, min_dist_angle);
+    TxD T0(clk, reset, rx_dv, max_dist_angle, min_dist_angle, obs_alert, transmitData);
 
 endmodule
