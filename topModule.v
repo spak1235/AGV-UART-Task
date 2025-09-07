@@ -374,6 +374,7 @@ module RxD (
     //To do is to be
     //To be is to do
     //Doo Bee Doo Bee Doo Ba
+endmodule
 
 module TxD(
     input clk,
@@ -623,31 +624,7 @@ module topModule(
     input wire receiveData,
     input wire clk,
     output wire transmitData,
-    output wire reset,
-    output wire [7:0] parallel_data,
-    output wire byte_packed,
-    output wire [15:0] min_distance_angle,
-    output wire [15:0] max_distance_angle,
-    output wire [15:0] obs_alert,
-    output wire sendData,
-    //distance process tb
-    output wire [1:0]headCheck,
-    output wire [7:0] CT,
-    output wire [15:0] FSA,LSA,
-    output wire [2:0] counter1,
-    output wire [7:0] counter2,
-    output wire [15:0] min_distance,max_distance,AtHand,
-    output wire sendingDone,
-    //TB transmiter
-    output wire [2:0] steps,
-    output wire [2:0] quo_rem_reg,
-    output wire busy,
-    output wire [15:0] min_distance_angle_local,
-    output wire receiveDataPliz,
-    output TxD_reset,
-    output [1:0] state,
-    output startTheSending,
-    output baud_clk
+    output wire reset
 );
 
 // module RxD (
@@ -676,6 +653,10 @@ module topModule(
 //     input [15:0] min_distance_angle, max_distance_angle,obs_alert
 //     output serial_output
 // );
+    wire [7:0] parallel_data;
+    wire byte_packed;
+    wire [15:0] min_distance_angle,max_distance_angle,obs_alert;
+    wire sendData;
     RxD Bulbasaur(
         .clk(clk),
         .reset(reset),
@@ -691,17 +672,7 @@ module topModule(
         .min_distance_angle(min_distance_angle),
         .max_distance_angle(max_distance_angle),
         .obs_alert(obs_alert),
-        .sendData(sendData),
-        .headCheck(headCheck),
-        .CT(CT),
-        .LSA(LSA),
-        .FSA(FSA),
-        .counter1(counter1),
-        .counter2(counter2),
-        .min_distance(min_distance),
-        .max_distance(max_distance),
-        .AtHand(AtHand),
-        .quo_rem_reg(quo_rem_reg)
+        .sendData(sendData)
     );
     controlToTxD Squirlte(
         .clk(clk),
@@ -710,15 +681,6 @@ module topModule(
         .min_distance_angle(min_distance_angle),
         .max_distance_angle(max_distance_angle),
         .obs_alert(obs_alert),
-        .serial_output(transmitData),
-        .sendingDone(sendingDone),
-        .steps(steps),
-        .busy(busy),
-        .receiveData(receiveDataPliz),
-        .min_distance_angle_local(min_distance_angle_local),
-        .TxD_reset(TxD_reset),
-        .state(state),
-        .startTheSending(startTheSending),
-        .baud_clk(baud_clk)
+        .serial_output(transmitData)
     );
 endmodule
