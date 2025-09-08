@@ -12,8 +12,8 @@ module TxD #(
     output reg [7:0] r_clock
 );
 
-    localparam Idle        = 5'b00000;
-    localparam Start       = 5'b00001;
+    localparam Idle = 5'b00000;
+    localparam Start = 5'b00001;
     localparam Transmission_mad_1 = 5'b00010;
     localparam Transmission_mad_2 = 5'b10010;
     localparam Transmission_mid_1 = 5'b00011;
@@ -30,7 +30,7 @@ module TxD #(
     localparam trans_start_3 = 5'b11010;
     localparam trans_start_4 = 5'b11011;
     localparam trans_start_5 = 5'b11100;
-    localparam Stop        = 5'b11111;
+    localparam Stop = 5'b11111;
 
     reg [4:0] state;  
     reg [3:0] counter = 0; 
@@ -42,10 +42,10 @@ module TxD #(
 
     always @(posedge clk) begin
         if (reset) begin
-            Tx        <= 1'b1;     
-            state     <= Idle;      
+            Tx <= 1'b1;     
+            state <= Idle;      
             shift_reg <= 0;    
-            counter   <= 0;
+            counter <= 0;
             r_clock <= 0;    
         end else begin
             case (state)

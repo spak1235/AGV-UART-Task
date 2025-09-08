@@ -13,7 +13,6 @@ Completed simulation data flow analysis
 Time Resolution for simulation is 1ps
 Compiling module xil_defaultlib.uart_rx
 Compiling module xil_defaultlib.rx_header
-Compiling module xil_defaultlib.distanceProcess
 Compiling module xil_defaultlib.TxD
 Compiling module xil_defaultlib.reciever_header_tb
 Compiling module xil_defaultlib.glbl

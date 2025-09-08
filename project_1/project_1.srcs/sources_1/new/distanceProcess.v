@@ -2,10 +2,10 @@ module distanceProcess (
     input clk,
     input rx_dv, 
     input reset,             // input strobe that new data has arrived
-    input [7:0] ct,           // sample count (must be power of 2)
-    input [15:0] FSA,         // first scan angle
-    input [15:0] LSA,         // last scan angle
-    output reg dv,            // data valid (1-cycle pulse when outputs update)
+    input [7:0] ct,          // sample count (must be power of 2)
+    input [15:0] FSA,        // first scan angle
+    input [15:0] LSA,        // last scan angle
+    output reg dv,           // data valid (1-cycle pulse when outputs update)
     output reg [15:0] obs_alert,
     output reg [15:0] max_dist_angle,
     output reg [15:0] min_dist_angle
@@ -57,16 +57,23 @@ module distanceProcess (
             obs_alert <= 0;
             max_dist_angle <= 0;
             min_dist <= 0;
-        end
-
-        else begin
+        end else begin
             if (rx_dv) begin
                 final_dv <= 1'b1;
+
+                // load sample_mem from file
                 $readmemh("sample_mem.mem", sample_mem);
+
+                // debug: print first 16 values
+                $display("----- First 16 values from sample_mem -----");
+                for (i = 0; i < 16; i = i + 1) begin
+                    $display("sample_mem[%0d] = %h", i, sample_mem[i]);
+                end
+                $display("------------------------------------------");
 
                 // compute k = log2(ct)
                 case (ct)
-                    6'd1: k<= 0;
+                    8'd1:   k <= 0;
                     8'd2:   k <= 1;
                     8'd4:   k <= 2;
                     8'd8:   k <= 3;
@@ -111,16 +118,14 @@ module distanceProcess (
 
                             ct_counter <= ct_counter + 1;
                         end else begin
-                        
                             t_obs_alert      <= temp_obs;
-
                             t_max_dist_angle <= FSA + (max_dist_index * ((LSA - FSA) >> k));
                             t_min_dist_angle <= FSA + (min_dist_index * ((LSA - FSA) >> k));
-
                             ct_state <= ct_write;
                         end
                     end
 
+                    // Write final results
                     ct_write: begin
                         obs_alert      <= t_obs_alert;
                         max_dist_angle <= t_max_dist_angle;
@@ -137,5 +142,4 @@ module distanceProcess (
             end
         end
     end
-
 endmodule

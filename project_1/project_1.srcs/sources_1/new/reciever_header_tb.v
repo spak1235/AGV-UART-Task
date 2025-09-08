@@ -22,9 +22,9 @@ module reciever_header_tb;
     wire [47:0] shift;
     wire [7:0] r_clock;
     // Instantiate UART RX
-    rx_header dut (tb_Clock, tb_Rx_Serial, reset, rx_dv, dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4);
-    distanceProcess dis(tb_Clock, rx_dv, reset, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, data_validation, obs_alert, mad, mia);
-    TxD tx(tb_Clock, reset, data_validation, mad, mia, obs_alert, Tx, shift, r_clock);
+    rx_header dut (tb_Clock, tb_Rx_Serial, reset, rx_dv, dv, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, obs_alert, mad, mia);
+   // distanceProcess dis(tb_Clock, rx_dv, reset, tb_Rx_Byte_2, tb_Rx_Byte_3, tb_Rx_Byte_4, data_validation, obs_alert, mad, mia);
+    TxD tx(tb_Clock, reset, rx_dv, mad, mia, obs_alert, Tx, shift, r_clock);
 
     // Clock generation: 10 MHz
     initial tb_Clock = 0;
