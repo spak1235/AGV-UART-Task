@@ -16,7 +16,7 @@ The LIDAR present in the AGV Mushr Bot is YDLIDAR X2, which transmits data to th
 2. CT (1 byte) - Describes the number of data samples being sent.
 3. FSA (2 bytes) - Represents the First Sampled Angle, with a **least count of one-hundredth of a degree**, i.e. 0x8000 corresponds to 0.01 degrees, not 1 degree.
 4. LSA (2 bytes) - Represents the Last Sampled Angle with the same format as FSA.
-5. Sample Data (N x 2 bytes) - Represents the distance to obstacle at the sampled angle, in mm. 
+5. Sample Data (N x 2 bytes) - Represents the distance to obstacle at the sampled angle, with Least Count of 0.1 mm. 
 
 Note that all the parts of the message other thann the header, follow a **little endian** arrangement of bits.
 
@@ -75,6 +75,7 @@ This task requires in-depth research as a broad range of concepts must be utiliz
     - [Wikipedia_Page_On_UART](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter)
 - Verilog:
     - [ChipVerify - Verilog](https://www.chipverify.com/tutorials/verilog)
+    - [HDLBits - Practice Verilog](https://hdlbits.01xz.net/wiki/Problem_sets)
 
 ### **Software and Packages Required:**
 
