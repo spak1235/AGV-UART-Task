@@ -83,23 +83,6 @@ module distanceProcess(input wire clock,
                         execstate <=LSA2;
                         datastate <= 9'o000;                        
                     end
-                    /*
-                    LSA2: begin
-                        $display(data[datastate]);
-                        lengthcopy <= lengthcopy-1;
-                            if (datastate[0]) begin
-                            data[datastate[4:1]][15:8] <= datain;
-                            end
-                            else begin
-                            data[datastate[4:1]][7:0] <= datain;    
-                            end
-                        if (lengthcopy==8'h01) 
-                        begin execstate <= DATA;
-                        lengthcopy <= 2*length; 
-                        counter <= 8'h00; 
-                        end
-                    end */ // what dog?
-                    
 
                     LSA2: begin
                         //$display("%h",data[datastate[8:1]-1]);
@@ -158,21 +141,6 @@ module distanceProcess(input wire clock,
                             end
                         end
                     end
-                    /*
-                    HIGA : begin
-                        counter <= counter + 1;
-                        if (counter == length) begin 
-                            execstate <= DIST;
-                            lowest <= (FSA*(256-lowestcount) + LSA*(lowestcount))>>8;  
-                            highest <= (FSA*(256-highestcount) + LSA*(highestcount))>>8;  
-                        end//im assuming least count is 0.1mm and not 1 mm
-                        if (data[counter] < 16'b0000001000000000) begin
-                            hitvector[counter] <= 1'b1;
-                        end
-                        else hitvector[counter] <= 1'b0;
-                    
-                    end
-                    */
                     HIGA : begin
                         trig_div <= 0;
                         if (div_res1 == 1 && div_res2 == 1) begin

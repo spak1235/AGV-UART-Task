@@ -63,23 +63,8 @@ module RxD(input wire stream,
     always @(posedge uart_clock_out) begin
         if (!reset) begin
             if (state == 0) begin
-                /*
-                if (!trig_clock && !trig_half) begin
-                clock_trig <=0;
-                infodump <= 1'b0;
-                end
-                if (stream == 0) begin state <= 3'b001; clock_trig <=1'b1;end */
             end
             else begin
-                /*
-                if (info_pulse) begin
-                    info_pulse <= 1'b0;
-                    infodump <= 1'b1;
-                end
-                else begin
-                    infodump <= 1'b0;
-
-                end*/
                 case(state)
                     3'b001 : begin
                         if (clock_out) begin
