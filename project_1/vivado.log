@@ -1,0 +1,103 @@
+#-----------------------------------------------------------
+# Vivado v2024.2 (64-bit)
+# SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
+# IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
+# SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
+# Start of session at: Mon Sep  8 03:07:38 2025
+# Process ID         : 22964
+# Current directory  : C:/Users/schou/Grindelwald/AGV-UART-Task/project_1
+# Command line       : vivado.exe -gui_launcher_event rodinguilauncherevent23432 C:\Users\schou\Grindelwald\AGV-UART-Task\project_1\project_1.xpr
+# Log file           : C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/vivado.log
+# Journal file       : C:/Users/schou/Grindelwald/AGV-UART-Task/project_1\vivado.jou
+# Running On         : Sohan
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26100
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13700HX
+# CPU Frequency      : 2304 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 16858 MB
+# Swap memory        : 6442 MB
+# Total Virtual      : 23300 MB
+# Available Virtual  : 9080 MB
+#-----------------------------------------------------------
+start_gui
+open_project C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.xpr
+INFO: [filemgmt 56-3] Default IP Output Path : Could not find the directory 'C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.gen/sources_1'.
+Scanning sources...
+Finished scanning sources
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/Xilinx/Vivado/2024.2/data/ip'.
+open_project: Time (s): cpu = 00:00:20 ; elapsed = 00:00:10 . Memory (MB): peak = 1209.652 ; gain = 99.789
+update_compile_order -fileset sources_1
+launch_simulation
+Command: launch_simulation 
+INFO: [Vivado 12-12493] Simulation top is 'reciever_header_tb'
+WARNING: [Vivado 12-13340] Unable to auto find GCC executables from simulator install path! (path not set)
+INFO: [Vivado 12-5682] Launching behavioral simulation in 'C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.sim/sim_1/behav/xsim'
+INFO: [SIM-utils-51] Simulation object is 'sim_1'
+INFO: [SIM-utils-72] Using boost library from 'C:/Xilinx/Vivado/2024.2/tps/boost_1_72_0'
+INFO: [SIM-utils-54] Inspecting design source files for 'reciever_header_tb' in fileset 'sim_1'...
+INFO: [USF-XSim-97] Finding global include files...
+INFO: [USF-XSim-98] Fetching design files from 'sim_1'...
+INFO: [USF-XSim-2] XSim::Compile design
+INFO: [USF-XSim-61] Executing 'COMPILE and ANALYZE' step in 'C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.sim/sim_1/behav/xsim'
+"xvlog --incr --relax -prj reciever_header_tb_vlog.prj"
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/TxD.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module TxD
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/rx_header.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module rx_header
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/uart_rx.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_rx
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/reciever_header_tb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module reciever_header_tb
+INFO: [USF-XSim-69] 'compile' step finished in '2' seconds
+INFO: [USF-XSim-3] XSim::Elaborate design
+INFO: [USF-XSim-61] Executing 'ELABORATE' step in 'C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.sim/sim_1/behav/xsim'
+"xelab --incr --debug typical --relax --mt 2 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip --snapshot reciever_header_tb_behav xil_defaultlib.reciever_header_tb xil_defaultlib.glbl -log elaborate.log"
+Vivado Simulator v2024.2.0
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: C:/Xilinx/Vivado/2024.2/bin/unwrapped/win64.o/xelab.exe --incr --debug typical --relax --mt 2 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip --snapshot reciever_header_tb_behav xil_defaultlib.reciever_header_tb xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+WARNING: [XSIM 43-4100] "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
+WARNING: [XSIM 43-4100] "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.uart_rx
+Compiling module xil_defaultlib.rx_header
+Compiling module xil_defaultlib.TxD
+Compiling module xil_defaultlib.reciever_header_tb
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot reciever_header_tb_behav
+INFO: [USF-XSim-69] 'elaborate' step finished in '3' seconds
+INFO: [USF-XSim-4] XSim::Simulate design
+INFO: [USF-XSim-61] Executing 'SIMULATE' step in 'C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.sim/sim_1/behav/xsim'
+INFO: [USF-XSim-98] *** Running xsim
+   with args "reciever_header_tb_behav -key {Behavioral:sim_1:Functional:reciever_header_tb} -tclbatch {reciever_header_tb.tcl} -log {simulate.log}"
+INFO: [USF-XSim-8] Loading simulator feature
+Time resolution is 1 ps
+source reciever_header_tb.tcl
+# set curr_wave [current_wave_config]
+# if { [string length $curr_wave] == 0 } {
+#   if { [llength [get_objects]] > 0} {
+#     add_wave /
+#     set_property needs_save false [current_wave_config]
+#   } else {
+#      send_msg_id Add_Wave-1 WARNING "No top level signals found. Simulator will start without a wave window. If you want to open a wave window go to 'File->New Waveform Configuration' or type 'create_wave_config' in the TCL console."
+#   }
+# }
+# run 100000000ns
+xsim: Time (s): cpu = 00:00:08 ; elapsed = 00:00:07 . Memory (MB): peak = 1264.383 ; gain = 15.914
+INFO: [USF-XSim-96] XSim completed. Design snapshot 'reciever_header_tb_behav' loaded.
+INFO: [USF-XSim-97] XSim simulation ran for 100000000ns
+launch_simulation: Time (s): cpu = 00:00:09 ; elapsed = 00:00:14 . Memory (MB): peak = 1264.383 ; gain = 19.621
+close_sim
+INFO: [Simtcl 6-16] Simulation closed
+exit
+INFO: [Common 17-206] Exiting Vivado at Mon Sep  8 03:16:24 2025...

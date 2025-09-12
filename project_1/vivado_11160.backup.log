@@ -1,0 +1,31 @@
+#-----------------------------------------------------------
+# Vivado v2024.2 (64-bit)
+# SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
+# IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
+# SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
+# Start of session at: Wed Sep  3 18:03:37 2025
+# Process ID         : 11160
+# Current directory  : C:/Users/schou/Grindelwald/AGV-UART-Task/project_1
+# Command line       : vivado.exe -gui_launcher_event rodinguilauncherevent17536 C:\Users\schou\Grindelwald\AGV-UART-Task\project_1\project_1.xpr
+# Log file           : C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/vivado.log
+# Journal file       : C:/Users/schou/Grindelwald/AGV-UART-Task/project_1\vivado.jou
+# Running On         : Sohan
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26100
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13700HX
+# CPU Frequency      : 2304 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 24
+# Host memory        : 16858 MB
+# Swap memory        : 6442 MB
+# Total Virtual      : 23300 MB
+# Available Virtual  : 12047 MB
+#-----------------------------------------------------------sstart_guioopen_project C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.xprINFO: [filemgmt 56-3] Default IP Output Path : Could not find the directory 'C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.gen/sources_1'.
+Scanning sources...
+Finished scanning sources
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/Xilinx/Vivado/2024.2/data/ip'.
+oopen_project: Time (s): cpu = 00:00:20 ; elapsed = 00:00:14 . Memory (MB): peak = 1205.770 ; gain = 104.297uupdate_compile_order -fileset sources_1exit
+INFO: [Common 17-206] Exiting Vivado at Wed Sep  3 18:12:29 2025...
+

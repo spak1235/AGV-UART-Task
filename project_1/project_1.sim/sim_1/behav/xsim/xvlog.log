@@ -1,0 +1,8 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/TxD.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module TxD
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/rx_header.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module rx_header
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/uart_rx.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_rx
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/schou/Grindelwald/AGV-UART-Task/project_1/project_1.srcs/sources_1/new/reciever_header_tb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module reciever_header_tb
