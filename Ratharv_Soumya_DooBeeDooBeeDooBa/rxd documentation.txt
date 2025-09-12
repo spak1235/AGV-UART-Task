@@ -1,0 +1,40 @@
+module RXD Documentation
+
+for RxD modules we define following ports
+1. clk - system clock
+2. reset - reset all internal regs and fsms
+3. rx_pin - incoming data is received here
+4. parallel_data - 8 bit serial data is succesfully packed into byte of paralllel bus
+5. byte_packed -  signals main controller that whole byte is ready
+
+internal registers defined in our module-
+1. rx_state - 3 bit sized reg defined to make 5 different states
+2. bit_counter - count from 0 to 7 is stored in this register while receiving bits
+3. baud_counter - measure baud intervals, count clock ticks in between one bit interval
+
+FSM starts from IDLE state
+1. sets byte_packed to 0
+2. if falling edge detected, moves to next state and resets baud bit_counter
+
+START state
+1. increments baud_counter and once we are at the required baud_counter i.e 43 we shift the state 
+to DATA and reset the baud rate and bit counter 
+
+DATA state
+1. baud_counter increases till 86 then resets again to 0 and bit_counter updates
+2. parallel_data loaded into output reg in serially increasing order 0 to 7
+3. shifts to STOP state
+
+STOP state
+1. wait for one bit to clear 
+2. set byte_packed to 
+3. shift to idle again
+
+# Thought of checking for noise in signals but not necessary as noise is about 0.2V 
+# testbench clocking from 0
+
+
+
+
+
+
