@@ -162,7 +162,7 @@ module distanceProcess (
                     sample_mem[sample_index] <= s_sample;
                     if (sample_index < sample_expected) begin
                         if (sample_index < 16) begin
-                            if (s_sample <16'd102) begin
+                            if (s_sample <16'd1024) begin
                                 obs_alert <= obs_alert | (16'h1 << sample_index);
                             end
                         end
@@ -203,3 +203,4 @@ module distanceProcess (
     end
 
 endmodule
+
