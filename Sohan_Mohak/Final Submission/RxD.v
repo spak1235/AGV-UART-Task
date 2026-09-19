@@ -19,9 +19,11 @@ module RxD #(
     reg [2:0] r_index = 0;
     reg [7:0] rx_byte = 0;
     reg rx_data = 1;
+    reg rx_meta;
 
     always @(posedge clk) begin
-        rx_data <= i_rx_s;
+        rx_meta <= i_rx_s;
+        rx_data <= rx_meta; 
     end
 
     always @(posedge clk) begin
